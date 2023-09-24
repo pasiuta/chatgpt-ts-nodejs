@@ -28,17 +28,23 @@ const generateResponse = (req, res) => __awaiter(void 0, void 0, void 0, functio
         const currentMessages = [];
         for (const [inputText, responseText] of conversationContext) {
             currentMessages.push({ role: "user", content: inputText });
-            currentMessages.push({ role: "assistant", content: responseText });
+            if (responseText) {
+                currentMessages.push({ role: "assistant", content: responseText });
+            }
         }
         currentMessages.push({ role: "user", content: prompt });
-        // Using the chat method based on the provided typings
         const result = yield openai.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: currentMessages,
         });
         const responseText = (_b = (_a = result.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content;
-        conversationContext.push([prompt, responseText]);
-        res.send({ response: responseText });
+        if (responseText) {
+            conversationContext.push([prompt, responseText]);
+            res.send({ response: responseText });
+        }
+        else {
+            throw new Error("Failed to generate a response from the model");
+        }
     }
     catch (err) {
         console.error(err);
